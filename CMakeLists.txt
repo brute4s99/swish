@@ -55,7 +55,7 @@ find_package(Boost
   COMPONENTS filesystem system test date_time regex signals locale)
 
 set(Boost_USE_STATIC_LIBS ON)
-find_package(Boost 1.49 REQUIRED
+find_package(Boost REQUIRED
   COMPONENTS filesystem date_time system regex signals thread locale)
 if(MSVC)
   add_definitions(-DBOOST_ALL_NO_LIB=1)
