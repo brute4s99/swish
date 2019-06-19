@@ -21,7 +21,7 @@ set(SOURCES
 
 add_library(forms ${SOURCES})
 
-hunter_add_package(Washer)
+find_package(Washer)
 find_package(Washer REQUIRED CONFIG)
 
 target_link_libraries(forms

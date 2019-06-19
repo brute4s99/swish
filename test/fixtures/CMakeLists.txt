@@ -22,9 +22,9 @@ add_library(openssh_fixture
   openssh_fixture.cpp
   openssh_fixture.hpp)
 
-hunter_add_package(Boost.Process)
-hunter_add_package(Comet)
-hunter_add_package(Washer)
+find_package(Boost.Process)
+find_package(Comet)
+find_package(Washer)
 
 find_package(Comet REQUIRED CONFIG)
 find_package(Washer REQUIRED CONFIG)

@@ -27,8 +27,8 @@ set(SOURCES
 
 add_library(connection ${SOURCES})
 
-hunter_add_package(Comet)
-hunter_add_package(Washer)
+find_package(Comet)
+find_package(Washer)
 
 find_package(Comet REQUIRED CONFIG)
 find_package(Washer REQUIRED CONFIG)

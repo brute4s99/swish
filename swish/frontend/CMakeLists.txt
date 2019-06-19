@@ -30,10 +30,10 @@ set(SOURCES
 
 add_library(frontend ${SOURCES})
 
-hunter_add_package(Comet)
-hunter_add_package(Washer)
-hunter_add_package(WinSparkle)
-hunter_add_package(WTL)
+find_package(Comet)
+find_package(Washer)
+find_package(WinSparkle)
+find_package(WTL)
 
 find_package(Comet REQUIRED CONFIG)
 find_package(Washer REQUIRED CONFIG)

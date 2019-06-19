@@ -19,13 +19,13 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 # Package management ###########################################################
 
-include(HunterGate)
+#include(HunterGate)
 
-HunterGate(
-    URL "https://github.com/alamaison/hunter/archive/ee83a15960b5d74098d8704bc9cf82ad8ec1734f.tar.gz"
-    SHA1 "d02301fee68f00198e7941129da446f80189017e"
-    LOCAL
-    )
+#HunterGate(
+#    URL "https://github.com/alamaison/hunter/archive/ee83a15960b5d74098d8704bc9cf82ad8ec1734f.tar.gz"
+#    SHA1 "d02301fee68f00198e7941129da446f80189017e"
+#    LOCAL
+#    )
 
 ################################################################################
 
@@ -51,7 +51,7 @@ add_definitions(-D_SCL_SECURE_NO_WARNINGS)
 # Currently required because not all Win32 calls use A or W form explicitly
 add_definitions(-DUNICODE -D_UNICODE)
 
-hunter_add_package(Boost
+find_package(Boost
   COMPONENTS filesystem system test date_time regex signals locale)
 
 set(Boost_USE_STATIC_LIBS ON)

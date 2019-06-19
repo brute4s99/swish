@@ -38,7 +38,7 @@ add_custom_target(ssh-src SOURCES ${SOURCES})
 add_library(ssh INTERFACE)
 target_include_directories(ssh INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 
-hunter_add_package(Libssh2)
+find_package(Libssh2)
 find_package(Libssh2 REQUIRED CONFIG)
 
 target_link_libraries(ssh INTERFACE Libssh2::libssh2 ${Boost_LIBRARIES})

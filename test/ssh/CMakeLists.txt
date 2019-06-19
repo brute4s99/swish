@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License along with
 # this program.  If not, see <http://www.gnu.org/licenses/>.
 
-hunter_add_package(Boost.Process)
+find_package(Boost.Process)
 
 # Underscores to distinguish from same-name Swish fixtures.  Can be renamed when
 # we split the projects.

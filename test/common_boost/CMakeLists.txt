@@ -29,8 +29,8 @@ set(SOURCES
 
 add_library(test-common_boost ${SOURCES})
 
-hunter_add_package(Comet)
-hunter_add_package(Washer)
+find_package(Comet)
+find_package(Washer)
 
 find_package(Comet REQUIRED CONFIG)
 find_package(Washer REQUIRED CONFIG)
