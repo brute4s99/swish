@@ -1,1 +1,0 @@
-const char git_version[] = "@SWISH_GIT_VERSION@";
