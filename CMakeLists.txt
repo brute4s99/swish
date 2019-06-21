@@ -23,7 +23,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 #HunterGate(
 #    URL "https://github.com/ruslo/hunter/archive/v0.14.23.tar.gz"
 #    SHA1 "999f07d004649f5f549953f74f21e46b48d53931"
-)
+#)
 
 ################################################################################
 
@@ -61,7 +61,8 @@ find_package(Boost REQUIRED
   filesystem date_time system regex
 #   signals
     thread locale serialization
-  unit_test_framework)
+#  unit_test_framework
+)
 if(MSVC)
   add_definitions(-DBOOST_ALL_NO_LIB=1)
 endif()
@@ -71,11 +72,11 @@ add_subdirectory(ssh)
 add_subdirectory(swish)
 add_subdirectory(po)
 
-option(BUILD_TESTING "Build test suite" ON)
-if(BUILD_TESTING)
-  enable_testing()
-  add_subdirectory(test)
-endif()
+option(BUILD_TESTING "Build test suite" OFF)
+#if(BUILD_TESTING)
+#  enable_testing()
+#  add_subdirectory(test)
+#endif()
 
 set(INSTALLER_URL
   "https://sourceforge.net/projects/swish/files/swish/swish-${swish_VERSION}/swish-${swish_VERSION}.exe")
