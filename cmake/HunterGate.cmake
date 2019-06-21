@@ -35,8 +35,8 @@
 #
 #     project(MyProject)
 #
-#     hunter_add_package(Foo)
-#     hunter_add_package(Boo COMPONENTS Bar Baz)
+#     find_package(Foo)
+#     find_package(Boo COMPONENTS Bar Baz)
 #
 # Projects:
 #     * https://github.com/hunter-packages/gate/
@@ -338,7 +338,7 @@ macro(HunterGate)
 
   if(NOT HUNTER_ENABLED)
     # Empty function to avoid error "unknown function"
-    function(hunter_add_package)
+    function(find_package)
     endfunction()
   elseif(_hunter_gate_done)
     hunter_gate_status_debug("Secondary HunterGate (use old settings)")

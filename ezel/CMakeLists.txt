@@ -41,4 +41,6 @@ target_include_directories(ezel INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 # Boost::serialization is really a dependency of washer (trace.hpp uses
 # boost/archive/iterators/mb_from_wchar.hpp), but until the dependency is fixed
 # there, we can work around it here.
-target_link_libraries(ezel INTERFACE Boost::boost Boost::signals Boost::serialization)
+target_link_libraries(ezel INTERFACE Boost::boost
+#Boost::signals
+ Boost::serialization)

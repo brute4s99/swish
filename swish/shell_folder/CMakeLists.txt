@@ -61,9 +61,9 @@ add_library(shell_folder ${SOURCES})
 target_include_directories(shell_folder
   PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/shell_folder.dir/${CMAKE_CFG_INTDIR})
 
-hunter_add_package(Comet)
-hunter_add_package(Washer)
-hunter_add_package(Boost COMPONENTS date_time system locale filesystem)
+find_package(Comet)
+find_package(Washer)
+find_package(Boost COMPONENTS date_time system locale filesystem)
 
 find_package(Comet REQUIRED CONFIG)
 find_package(Washer REQUIRED CONFIG)

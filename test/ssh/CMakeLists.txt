@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License along with
 # this program.  If not, see <http://www.gnu.org/licenses/>.
 
-hunter_add_package(BoostProcess)
+find_package(BoostProcess)
 find_package(BoostProcess CONFIG REQUIRED)
 
 find_package(Boost 1.40 CONFIG REQUIRED COMPONENTS unit_test_framework)

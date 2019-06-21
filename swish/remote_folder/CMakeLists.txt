@@ -45,9 +45,9 @@ add_library(remote_folder ${SOURCES})
 target_compile_definitions(remote_folder
   PRIVATE ISOLATION_AWARE_ENABLED=1)
 
-hunter_add_package(Comet)
-hunter_add_package(Washer)
-hunter_add_package(Boost COMPONENTS filesystem regex locale)
+find_package(Comet)
+find_package(Washer)
+find_package(Boost COMPONENTS filesystem regex locale)
 
 find_package(Comet REQUIRED CONFIG)
 find_package(Washer REQUIRED CONFIG)

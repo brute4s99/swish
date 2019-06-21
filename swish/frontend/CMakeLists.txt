@@ -21,25 +21,25 @@ set(SOURCES
   announce_error.hpp
   bind_best_taskdialog.hpp
   UserInteraction.hpp
-  winsparkle_shower.hpp
+#  winsparkle_shower.hpp
   announce_error.cpp
   bind_best_taskdialog.cpp
   UserInteraction.cpp
-  winsparkle_shower.cpp
+#  winsparkle_shower.cpp
   ${COMMAND_SOURCES})
 
 add_library(frontend ${SOURCES})
 
-hunter_add_package(Comet)
-hunter_add_package(Washer)
-hunter_add_package(WinSparkle)
-hunter_add_package(WTL)
+find_package(Comet)
+find_package(Washer)
+#find_package(WinSparkle)
+find_package(WTL)
 
 find_package(Comet REQUIRED CONFIG)
 find_package(Washer REQUIRED CONFIG)
-find_package(WinSparkle REQUIRED CONFIG)
+#find_package(WinSparkle REQUIRED CONFIG)
 find_package(WTL REQUIRED CONFIG)
 
 target_link_libraries(frontend
-  PRIVATE nse versions WinSparkle::WinSparkle
+#  PRIVATE nse versions WinSparkle::WinSparkle
   PUBLIC WTL::WTL Washer::washer Comet::comet)

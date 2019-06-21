@@ -49,14 +49,18 @@ add_definitions(-D_SCL_SECURE_NO_WARNINGS)
 # Currently required because not all Win32 calls use A or W form explicitly
 add_definitions(-DUNICODE -D_UNICODE)
 
-hunter_add_package(Boost
+find_package(Boost
   COMPONENTS
-  filesystem system test date_time regex signals locale thread serialization)
+  filesystem system test date_time regex
+#   signals 
+    locale thread serialization)
 
 set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost REQUIRED
   COMPONENTS
-  filesystem date_time system regex signals thread locale serialization
+  filesystem date_time system regex
+#   signals
+    thread locale serialization
   unit_test_framework)
 if(MSVC)
   add_definitions(-DBOOST_ALL_NO_LIB=1)

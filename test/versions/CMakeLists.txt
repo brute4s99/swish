@@ -16,7 +16,7 @@
 set(SOURCES
   version_test.cpp)
 
-hunter_add_package(Boost COMPONENTS test)
+find_package(Boost COMPONENTS test)
 find_package(Boost REQUIRED COMPONENTS unit_test_framework)
 
 swish_test_suite(

@@ -24,9 +24,9 @@ set(SOURCES
 
 add_library(provider ${SOURCES})
 
-hunter_add_package(Comet)
-hunter_add_package(Washer)
-hunter_add_package(Boost COMPONENTS filesystem regex system)
+find_package(Comet)
+find_package(Washer)
+find_package(Boost COMPONENTS filesystem regex system)
 
 find_package(Comet REQUIRED CONFIG)
 find_package(Washer REQUIRED CONFIG)
