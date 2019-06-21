@@ -19,10 +19,10 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 # Package management ###########################################################
 
-include(HunterGate)
-HunterGate(
-    URL "https://github.com/ruslo/hunter/archive/v0.14.23.tar.gz"
-    SHA1 "999f07d004649f5f549953f74f21e46b48d53931"
+#include(HunterGate)
+#HunterGate(
+#    URL "https://github.com/ruslo/hunter/archive/v0.14.23.tar.gz"
+#    SHA1 "999f07d004649f5f549953f74f21e46b48d53931"
 )
 
 ################################################################################
