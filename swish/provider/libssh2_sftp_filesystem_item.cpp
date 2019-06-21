@@ -5,7 +5,7 @@
 
     @if license
 
-    Copyright (C) 2012  Alexander Lamaison <awl03@doc.ic.ac.uk>
+    Copyright (C) 2012, 2015  Alexander Lamaison <awl03@doc.ic.ac.uk>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -43,6 +43,7 @@ using swish::utils::Utf8StringToWideString;
 using comet::datetime_t;
 
 using ssh::filesystem::file_attributes;
+using ssh::filesystem::path;
 using ssh::filesystem::sftp_file;
 
 using boost::optional;
@@ -52,106 +53,103 @@ using boost::uint64_t;
 using std::string;
 using std::wstring;
 
-namespace {
+namespace
+{
 
-    const boost::regex regex("\\S{10,}\\s+\\d+\\s+(\\S+)\\s+(\\S+)\\s+.+");
-    const unsigned int USER_MATCH = 1;
-    const unsigned int GROUP_MATCH = 2;
-        
-    /**
-     * Get the username part of an SFTP 'ls -l'-style long entry.
-     *
-     * According to the specification
-     * (http://www.openssh.org/txt/draft-ietf-secsh-filexfer-02.txt):
-     *
-     * The recommended format for the longname field is as follows:
-     *
-     *     -rwxr-xr-x   1 mjos     staff      348911 Mar 25 14:29 t-filexfer
-     *     1234567890 123 12345678 12345678 12345678 123456789012
-     *
-     * where the second line shows the *minimum* number of characters.
-     *
-     * @warning
-     * The spec specifically forbids parsing this long entry by it is the
-     * only way to get the user @b name rather than the user @b ID.
-     */
-    optional<wstring> parse_user_from_long_entry(const string& long_entry)
+const boost::regex regex("\\S{10,}\\s+\\d+\\s+(\\S+)\\s+(\\S+)\\s+.+");
+const unsigned int USER_MATCH = 1;
+const unsigned int GROUP_MATCH = 2;
+
+/**
+ * Get the username part of an SFTP 'ls -l'-style long entry.
+ *
+ * According to the specification
+ * (http://www.openssh.org/txt/draft-ietf-secsh-filexfer-02.txt):
+ *
+ * The recommended format for the longname field is as follows:
+ *
+ *     -rwxr-xr-x   1 mjos     staff      348911 Mar 25 14:29 t-filexfer
+ *     1234567890 123 12345678 12345678 12345678 123456789012
+ *
+ * where the second line shows the *minimum* number of characters.
+ *
+ * @warning
+ * The spec specifically forbids parsing this long entry by it is the
+ * only way to get the user @b name rather than the user @b ID.
+ */
+optional<wstring> parse_user_from_long_entry(const string& long_entry)
+{
+    boost::smatch match;
+    if (regex_match(long_entry, match, regex) && match[USER_MATCH].matched)
     {
-        boost::smatch match;
-        if (regex_match(long_entry, match, regex) && match[USER_MATCH].matched)
-        {
-            return Utf8StringToWideString(match[USER_MATCH].str());
-        }
-        else
-        {
-            return optional<wstring>();
-        }
+        return Utf8StringToWideString(match[USER_MATCH].str());
     }
-
-    /**
-     * Get the group name part of an SFTP 'ls -l'-style long entry.
-     *
-     * @see parse_user_from_long_entry() for more information.
-     */
-    optional<wstring> parse_group_from_long_entry(const string& long_entry)
+    else
     {
-        boost::smatch match;
-        if (regex_match(long_entry, match, regex) && match[GROUP_MATCH].matched)
-        {
-            return Utf8StringToWideString(match[GROUP_MATCH].str());
-        }
-        else
-        {
-            return optional<wstring>();
-        }
+        return optional<wstring>();
     }
-
 }
 
-namespace swish {
-namespace provider {
+/**
+ * Get the group name part of an SFTP 'ls -l'-style long entry.
+ *
+ * @see parse_user_from_long_entry() for more information.
+ */
+optional<wstring> parse_group_from_long_entry(const string& long_entry)
+{
+    boost::smatch match;
+    if (regex_match(long_entry, match, regex) && match[GROUP_MATCH].matched)
+    {
+        return Utf8StringToWideString(match[GROUP_MATCH].str());
+    }
+    else
+    {
+        return optional<wstring>();
+    }
+}
+}
+
+namespace swish
+{
+namespace provider
+{
 
 sftp_filesystem_item
 libssh2_sftp_filesystem_item::create_from_libssh2_attributes(
-    const string& char_blob_file_name, const file_attributes& attributes)
+    const path& file_name, const file_attributes& attributes)
 {
-    return sftp_filesystem_item(
-        shared_ptr<sftp_filesystem_item_interface>(
-            new libssh2_sftp_filesystem_item(char_blob_file_name, attributes)));
+    return sftp_filesystem_item(shared_ptr<sftp_filesystem_item_interface>(
+        new libssh2_sftp_filesystem_item(file_name, attributes)));
 }
 
 sftp_filesystem_item
 libssh2_sftp_filesystem_item::create_from_libssh2_file(const sftp_file& file)
 {
-    return sftp_filesystem_item(
-        shared_ptr<sftp_filesystem_item_interface>(
-            new libssh2_sftp_filesystem_item(file)));
+    return sftp_filesystem_item(shared_ptr<sftp_filesystem_item_interface>(
+        new libssh2_sftp_filesystem_item(file)));
 }
 
-
 void libssh2_sftp_filesystem_item::common_init(
-    const string& char_blob_file_name, const file_attributes& attributes)
+    const path& file_name, const file_attributes& attributes)
 {
-    // FIXME: this filename may not be UTF-8 but we're blindly treating
-    // it as though it were - should autodetect if possible
-    m_path = Utf8StringToWideString(char_blob_file_name);
+    m_path = file_name;
 
     switch (attributes.type())
     {
     case file_attributes::normal_file:
-        m_type = type::file;
+        m_type = item_type::file;
         break;
 
     case file_attributes::directory:
-        m_type = type::directory;
+        m_type = item_type::directory;
         break;
 
     case file_attributes::symbolic_link:
-        m_type = type::link;
+        m_type = item_type::link;
         break;
 
     default:
-        m_type = type::unknown;
+        m_type = item_type::unknown;
     }
 
     if (attributes.permissions())
@@ -191,12 +189,15 @@ void libssh2_sftp_filesystem_item::common_init(
 
 libssh2_sftp_filesystem_item::libssh2_sftp_filesystem_item(
     const sftp_file& file)
-    :
-m_type(type::unknown), m_permissions(0U), m_uid(0U), m_gid(0U), m_size(0U)
+    : m_type(item_type::unknown),
+      m_permissions(0U),
+      m_uid(0U),
+      m_gid(0U),
+      m_size(0U)
 {
     file_attributes attributes = file.attributes();
 
-    common_init(file.name(), attributes);
+    common_init(file.path().filename(), attributes);
 
     // Naughtily, we parse the long (ls -l) form of the file's attributes
     // for the username and group.  The standard says we shouldn't but
@@ -222,20 +223,23 @@ m_type(type::unknown), m_permissions(0U), m_uid(0U), m_gid(0U), m_size(0U)
 }
 
 libssh2_sftp_filesystem_item::libssh2_sftp_filesystem_item(
-    const string& char_blob_file_name, const file_attributes& attributes)
-    :
-m_type(type::unknown), m_permissions(0U), m_uid(0U), m_gid(0U), m_size(0U)
+    const path& file_name, const file_attributes& attributes)
+    : m_type(item_type::unknown),
+      m_permissions(0U),
+      m_uid(0U),
+      m_gid(0U),
+      m_size(0U)
 {
-    common_init(char_blob_file_name, attributes);
+    common_init(file_name, attributes);
 }
 
-BOOST_SCOPED_ENUM(sftp_filesystem_item_interface::type)
+sftp_filesystem_item_interface::item_type
 libssh2_sftp_filesystem_item::type() const
 {
     return m_type;
 }
 
-sftp_provider_path libssh2_sftp_filesystem_item::filename() const
+ssh::filesystem::path libssh2_sftp_filesystem_item::filename() const
 {
     return m_path.filename();
 }
@@ -281,7 +285,8 @@ datetime_t libssh2_sftp_filesystem_item::last_modified() const
 }
 
 /*
-bool libssh2_sftp_filesystem_item::operator<(const libssh2_sftp_filesystem_item& other) const
+bool libssh2_sftp_filesystem_item::operator<(const libssh2_sftp_filesystem_item&
+other) const
 {
     if (bstrFilename == 0)
         return other.bstrFilename != 0;
@@ -294,7 +299,8 @@ bool libssh2_sftp_filesystem_item::operator<(const libssh2_sftp_filesystem_item&
         ::GetThreadLocale(), 0) == VARCMP_LT;
 }
 
-bool libssh2_sftp_filesystem_item::operator==(const libssh2_sftp_filesystem_item& other) const
+bool libssh2_sftp_filesystem_item::operator==(const
+libssh2_sftp_filesystem_item& other) const
 {
     if (bstrFilename == 0 && other.bstrFilename == 0)
         return true;
@@ -309,5 +315,5 @@ bool libssh2_sftp_filesystem_item::operator==(const comet::bstr_t& name) const
     return bstrFilename == name;
 }
 */
-
-}}
+}
+}

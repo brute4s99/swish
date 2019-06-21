@@ -31,12 +31,13 @@
 #include "swish/drop_target/Operation.hpp"
 
 #include <boost/cstdint.hpp> // uintmax_t
-#include <boost/filesystem/path.hpp> // wpath
 #include <boost/numeric/conversion/cast.hpp> // numeric_cast
 #include <boost/shared_array.hpp>
 #include <boost/throw_exception.hpp>  // BOOST_THROW_EXCEPTION
 
 #include <comet/error.h> // com_error
+
+#include <ssh/filesystem/path.hpp>
 
 #include <cassert> // assert
 #include <memory> // auto_ptr
@@ -46,7 +47,8 @@ using swish::provider::sftp_provider;
 using comet::com_error;
 using comet::com_ptr;
 
-using boost::filesystem::wpath;
+using ssh::filesystem::path;
+
 using boost::numeric_cast;
 using boost::shared_ptr;
 using boost::uintmax_t;
@@ -102,7 +104,7 @@ namespace {
             return m_callback.check_if_user_cancelled();
         }
 
-        virtual bool request_overwrite_permission(const wpath& target) const
+        virtual bool request_overwrite_permission(const path& target) const
         {
             return m_callback.request_overwrite_permission(target);
         }
@@ -161,7 +163,7 @@ namespace {
 
             operation(micro_updater, provider);
 
-            // We update here as well, fixing the progress to a file 
+            // We update here as well, fixing the progress to a file
             // boundary, as we don't completely trust the intra-file
             // progress.  A stream could have lied about its size messing
             // up the count.  This will override any such errors.
@@ -179,7 +181,7 @@ namespace {
             }
         }
 
-        virtual bool request_overwrite_permission(const wpath& target) const
+        virtual bool request_overwrite_permission(const path& target) const
         {
             return m_callback.can_overwrite(target);
         }

@@ -36,7 +36,7 @@
 #include <comet/datetime.h> // datetime_t
 
 #include <boost/bind.hpp>
-#include <boost/filesystem.hpp> // wpath
+#include <boost/filesystem.hpp> // path
 #include <boost/foreach.hpp> // BOOST_FOREACH
 #include <boost/format.hpp> // wformat
 #include <boost/shared_ptr.hpp>
@@ -66,15 +66,15 @@ namespace detail {
      * path given as a string.
      */
     inline FilesystemLocation find_location_from_path(
-        const Filesystem& filesystem, const boost::filesystem::wpath& path)
+        const Filesystem& filesystem, const ssh::filesystem::path& path)
     {
         // Start searching in root of 'filesystem'
         FilesystemLocation current_dir = filesystem.begin();
 
         // Walk down list of tokens finding each item below the previous
-        BOOST_FOREACH(boost::filesystem::wpath segment, path.relative_path())
+        BOOST_FOREACH(ssh::filesystem::path segment, path.relative_path())
         {
-            std::wstring name = segment.string();
+            std::wstring name = segment.wstring();
 
             if (name == L".")
                 continue;
@@ -112,12 +112,12 @@ namespace detail {
                     new mock_filesystem_file(name, permissions, size, date)));
         }
 
-        BOOST_SCOPED_ENUM(type) type() const
+        item_type type() const
         {
-            return type::file;
+            return item_type::file;
         }
 
-        swish::provider::sftp_provider_path filename() const
+        ssh::filesystem::path filename() const
         {
             return m_name;
         }
@@ -187,12 +187,12 @@ namespace detail {
                     new mock_filesystem_directory(name)));
         }
 
-        BOOST_SCOPED_ENUM(type) type() const
+        item_type type() const
         {
-            return type::directory;
+            return item_type::directory;
         }
 
-        swish::provider::sftp_provider_path filename() const
+        ssh::filesystem::path filename() const
         {
             return m_name;
         }
@@ -255,12 +255,12 @@ namespace detail {
                     new mock_filesystem_link(name)));
         }
 
-        BOOST_SCOPED_ENUM(type) type() const
+        item_type type() const
         {
-            return type::link;
+            return item_type::link;
         }
 
-        swish::provider::sftp_provider_path filename() const
+        ssh::filesystem::path filename() const
         {
             return m_name;
         }
@@ -311,10 +311,13 @@ namespace detail {
         std::wstring m_name;
     };
 
-    inline comet::bstr_t tag_filename(
-        const wchar_t* filename, const boost::filesystem::wpath& directory)
+    inline std::wstring tag_filename(
+        const std::wstring& filename, const ssh::filesystem::path& directory)
     {
-        return str(boost::wformat(filename) % directory.filename());
+        // UNOBVIOUS: converting the path to a string here, rather than passing
+        // the path directly to the formatter, because Boost.Filesystem v3,
+        // surprisingly, quotes all paths that are sent to an output stream.
+        return str(boost::wformat(filename) % directory.filename().wstring());
     }
 
     inline void make_item_in(
@@ -325,7 +328,7 @@ namespace detail {
     }
 
     inline void make_item_in(
-        Filesystem& filesystem, const boost::filesystem::wpath& path,
+        Filesystem& filesystem, const ssh::filesystem::path& path,
         const swish::provider::sftp_filesystem_item& item)
     {
         make_item_in(
@@ -338,9 +341,9 @@ namespace detail {
      * listing later.
      */
     inline void fill_mock_listing(
-        Filesystem& filesystem, const boost::filesystem::wpath& directory)
+        Filesystem& filesystem, const ssh::filesystem::path& directory)
     {
-        std::vector<comet::bstr_t> filenames;
+        std::vector<std::wstring> filenames;
         filenames.push_back(tag_filename(L"test%sfile", directory));
         filenames.push_back(tag_filename(L"test%sFile", directory));
         filenames.push_back(tag_filename(L"test%sfile.ext", directory));
@@ -369,7 +372,7 @@ namespace detail {
         {
             // Try to cycle through the permissions on each successive file
             // TODO: I have no idea if this works
-            unsigned permissions = 
+            unsigned permissions =
                 (cycle % 1) || ((cycle % 2) << 1) || ((cycle % 3) << 2);
 
             make_item_in(
@@ -384,7 +387,7 @@ namespace detail {
         }
 
         // Add some dummy folders also
-        std::vector<comet::bstr_t> folder_names;
+        std::vector<std::wstring> folder_names;
         folder_names.push_back(tag_filename(L"Test%sfolder", directory));
         folder_names.push_back(tag_filename(L"test%sfolder.ext", directory));
         folder_names.push_back(tag_filename(L"test%sfolder.bmp", directory));
@@ -401,7 +404,7 @@ namespace detail {
         }
 
         // Last but not least, links
-        std::vector<comet::bstr_t> link_names;
+        std::vector<std::wstring> link_names;
         link_names.push_back(tag_filename(L"link%sfolder", directory));
         link_names.push_back(tag_filename(L"another link%sfolder", directory));
         link_names.push_back(tag_filename(L"p%s", directory));
@@ -491,7 +494,7 @@ public:
     }
 
     virtual swish::provider::directory_listing listing(
-        const swish::provider::sftp_provider_path& directory)
+        const ssh::filesystem::path& directory)
     {
         std::vector<swish::provider::sftp_filesystem_item> files;
 
@@ -532,19 +535,20 @@ public:
     }
 
     virtual comet::com_ptr<IStream> get_file(
-        std::wstring file_path, std::ios_base::openmode /*mode*/)
+        const ssh::filesystem::path& file_path, std::ios_base::openmode /*mode*/)
     {
         detail::find_location_from_path(
             m_filesystem, file_path); // test existence
 
         // Create IStream instance whose data is the file path
         return ::SHCreateMemStream(
-            reinterpret_cast<const BYTE*>(file_path.c_str()),
-            static_cast<UINT>((file_path.size() + 1) * sizeof(wchar_t)));
+            reinterpret_cast<const BYTE*>(file_path.wstring().c_str()),
+            static_cast<UINT>((file_path.wstring().size() + 1) * sizeof(wchar_t)));
     }
 
     virtual VARIANT_BOOL rename(
-        ISftpConsumer* consumer, BSTR from_path, BSTR to_path)
+        ISftpConsumer* consumer, const ssh::filesystem::path& from_path,
+        const ssh::filesystem::path& to_path)
     {
         detail::find_location_from_path(
             m_filesystem, from_path); // test existence
@@ -556,7 +560,9 @@ public:
 
         case ConfirmOverwrite:
             {
-                HRESULT hr = consumer->OnConfirmOverwrite(from_path, to_path);
+                HRESULT hr = consumer->OnConfirmOverwrite(
+                        comet::bstr_t(from_path).in(),
+                        comet::bstr_t(to_path).in());
                 if (SUCCEEDED(hr))
                     return VARIANT_TRUE;
                 BOOST_THROW_EXCEPTION(
@@ -576,42 +582,38 @@ public:
         }
     }
 
-    virtual void remove_all(BSTR /*path*/)
+    virtual void remove_all(const ssh::filesystem::path& /*path*/)
     {};
 
-    virtual void create_new_directory(BSTR /*path*/)
+    virtual void create_new_directory(const ssh::filesystem::path& /*path*/)
     {};
 
-    virtual BSTR resolve_link(BSTR path)
+    virtual ssh::filesystem::path resolve_link(
+        const ssh::filesystem::path& path)
     {
-        std::wstring p(path);
+        std::wstring p(path.wstring());
 
         // link names with 'broken' in their name we pretend to resolve to
         // a target that doesn't exist
         if (p.find(L"broken") != std::wstring::npos)
-            return comet::bstr_t(L"/tmp/broken_link_target").detach();
+            return ssh::filesystem::path(L"/tmp/broken_link_target");
 
         // link names with 'folder' in their name we pretend target a directory
         // (/tmp/testtmpfolder) and the others we target at a file
         // (/tmp/testfile)
         else if (p.find(L"folder") != std::wstring::npos)
-            return comet::bstr_t(L"/tmp/Testtmpfolder").detach();
+            return ssh::filesystem::path(L"/tmp/Testtmpfolder");
         else
-            return comet::bstr_t(L"/tmp/testtmpfile").detach();
+            return ssh::filesystem::path(L"/tmp/testtmpfile");
     };
 
     virtual swish::provider::sftp_filesystem_item stat(
-        const swish::provider::sftp_provider_path& path,
-        bool follow_links)
+        const ssh::filesystem::path& path, bool follow_links)
     {
-        boost::filesystem::wpath target;
+        ssh::filesystem::path target;
         if (follow_links)
         {
-            target =
-                comet::bstr_t(
-                    comet::auto_attach(
-                        resolve_link(
-                            comet::bstr_t(path.string()).in()))).w_str();
+            target = resolve_link(path);
         }
         else
         {

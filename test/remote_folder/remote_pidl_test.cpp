@@ -30,8 +30,8 @@
 
 #include <comet/datetime.h> // datetime_t
 
-#include <winapi/shell/pidl.hpp> // apidl_t, cpidl_t
-#include <winapi/shell/shell.hpp> // pidl_from_parsing_name
+#include <washer/shell/pidl.hpp> // apidl_t, cpidl_t
+#include <washer/shell/shell.hpp> // pidl_from_parsing_name
 
 #include <boost/test/unit_test.hpp>
 
@@ -43,10 +43,10 @@ using swish::remote_folder::create_remote_itemid;
 using swish::remote_folder::path_from_remote_pidl;
 using swish::remote_folder::remote_itemid_view;
 
-using winapi::shell::pidl::apidl_t;
-using winapi::shell::pidl::cpidl_t;
-using winapi::shell::pidl::pidl_t;
-using winapi::shell::pidl_from_parsing_name;
+using washer::shell::pidl::apidl_t;
+using washer::shell::pidl::cpidl_t;
+using washer::shell::pidl::pidl_t;
+using washer::shell::pidl_from_parsing_name;
 
 using comet::com_ptr;
 using comet::datetime_t;
@@ -150,7 +150,7 @@ BOOST_AUTO_TEST_CASE( create_for_folder )
 
 BOOST_AUTO_TEST_CASE( invalid_remote_item )
 {
-    apidl_t pidl = winapi::shell::special_folder_pidl(CSIDL_DRIVES);
+    apidl_t pidl = washer::shell::special_folder_pidl(CSIDL_DRIVES);
 
     BOOST_CHECK(!remote_itemid_view(pidl).valid());
     BOOST_CHECK_THROW(remote_itemid_view(pidl).filename(), exception);
@@ -175,7 +175,20 @@ BOOST_AUTO_TEST_CASE( build_path_from_remote_pidl )
         test_remote_itemid(L"biscuit.txt", false);
 
     BOOST_CHECK_EQUAL(
-        path_from_remote_pidl(pidl), L"foo/bar/biscuit.txt");
+        path_from_remote_pidl(pidl), "foo/bar/biscuit.txt");
+}
+
+BOOST_AUTO_TEST_CASE( build_path_from_remote_pidl_renders_expected_string )
+{
+    // The path may compare equal to the expected string without rendering
+    // itself as the same string.  For example, the slashes might be backslashes
+    // instead of forward slashes.  This causes problems down the line.
+    pidl_t pidl =
+        test_remote_itemid(L"foo", true) + test_remote_itemid(L"bar", false) +
+        test_remote_itemid(L"biscuit.txt", false);
+
+    BOOST_CHECK_EQUAL(
+        path_from_remote_pidl(pidl).string(), "foo/bar/biscuit.txt");
 }
 
 BOOST_AUTO_TEST_CASE( build_path_from_remote_pidl_single )

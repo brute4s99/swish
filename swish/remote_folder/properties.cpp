@@ -30,9 +30,15 @@
 #include "swish/remote_folder/remote_pidl.hpp" // remote_itemid_view
 
 #include <boost/assign.hpp> // map_list_of
+
+#include <boost/exception/info.hpp>
+#include <boost/exception/errinfo_api_function.hpp> // errinfo_api_function
 #include <boost/function.hpp> // function
 #include <boost/locale.hpp> // translate
 #include <boost/throw_exception.hpp> // BOOST_THROW_EXCEPTION
+
+#include <comet/error.h> // com_error
+#include <comet/util.h> // autocoinit
 
 #include <cassert> // assert
 #include <map>
@@ -41,12 +47,16 @@
 #include <Propkey.h> // PKEY_ *
 #include <ShellAPI.h> // SHGetFileInfo
 
-using winapi::shell::pidl::cpidl_t;
-using winapi::shell::property_key;
+using washer::shell::pidl::cpidl_t;
+using washer::shell::property_key;
 
+using comet::auto_coinit;
 using comet::variant_t;
+using comet::com_error;
 
 using boost::assign::map_list_of;
+using boost::enable_error_info;
+using boost::errinfo_api_function;
 using boost::locale::translate;
 
 using std::map;
@@ -83,17 +93,27 @@ namespace {
      */
     std::wstring lookup_friendly_typename(const cpidl_t& pidl)
     {
-        DWORD dwAttributes = 
+        // Must call CoInitialize before SHGetFileInfo, otherwise it returns
+        // the wrong typename (something like "TXT file" instead of
+        // "Text Document")
+        auto_coinit com_scope;
+
+        DWORD dwAttributes =
             (remote_itemid_view(pidl).is_folder()) ?
                 FILE_ATTRIBUTE_DIRECTORY : FILE_ATTRIBUTE_NORMAL;
 
         UINT uInfoFlags = SHGFI_USEFILEATTRIBUTES | SHGFI_TYPENAME;
 
-        SHFILEINFO shfi;
-        ATLENSURE(::SHGetFileInfo(
-            remote_itemid_view(pidl).filename().c_str(), dwAttributes, 
-            &shfi, sizeof(shfi), uInfoFlags));
-        
+        SHFILEINFOW shfi = SHFILEINFOW();
+        if (!::SHGetFileInfoW(
+            remote_itemid_view(pidl).filename().c_str(), dwAttributes,
+            &shfi, sizeof(shfi), uInfoFlags))
+		{
+			BOOST_THROW_EXCEPTION(
+				enable_error_info(com_error(E_FAIL)) <<
+				errinfo_api_function("SHGetFileInfoW"));
+		}
+
         return shfi.szTypeName;
     }
 

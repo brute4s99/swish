@@ -26,9 +26,9 @@
 
 #include "data_object_utils.hpp"
 
-#include "swish/shell_folder/shell.hpp"
+#include "swish/shell/shell.hpp"
 
-#include <winapi/shell/shell.hpp> // bind_to_handler_object
+#include <washer/shell/shell.hpp> // bind_to_handler_object
 
 #include <comet/error.h> // com_error
 
@@ -40,12 +40,12 @@
 #include <string>
 #include <vector>
 
-using swish::shell_folder::pidl_from_path;
-using swish::shell_folder::ui_object_of_items;
+using swish::shell::pidl_from_path;
+using swish::shell::ui_object_of_items;
 
-using winapi::shell::bind_to_handler_object;
+using washer::shell::bind_to_handler_object;
 
-using boost::filesystem::wpath;
+using boost::filesystem::path;
 using boost::shared_ptr;
 using boost::numeric_cast;
 using boost::system::get_system_category;
@@ -62,12 +62,12 @@ namespace {
     /**
      * Return the path of the currently running executable.
      */
-    wpath get_module_path(HMODULE hmodule=NULL)
+    path get_module_path(HMODULE hmodule=NULL)
     {
         vector<wchar_t> buffer(MAX_PATH);
         unsigned long len = ::GetModuleFileNameW(
             hmodule, &buffer[0], numeric_cast<unsigned long>(buffer.size()));
-        
+
         if (len == 0)
             BOOST_THROW_EXCEPTION(
                 system_error(::GetLastError(), get_system_category()));
@@ -85,17 +85,17 @@ namespace data_object_utils {
  * of 'virtual' namespace items.
  *
  * Virtual namespace items are not real files on disk and instead are
- * simulated by an IShellFolder implementation.  This is how Swish 
- * itself presents its 'files' to Explorer.  The ZIP-file browser in 
- * Windows 2000 and later does the same thing to give access to the 
- * files inside a .zip.  We're going to use one of these to test our 
+ * simulated by an IShellFolder implementation.  This is how Swish
+ * itself presents its 'files' to Explorer.  The ZIP-file browser in
+ * Windows 2000 and later does the same thing to give access to the
+ * files inside a .zip.  We're going to use one of these to test our
  * shell data object wrapper with virtual items.
  */
-wpath create_test_zip_file(const wpath& in_directory)
+path create_test_zip_file(const path& in_directory)
 {
-    wpath source = get_module_path().parent_path()
+    path source = get_module_path().parent_path()
         / L"test_zip_file.zip";
-    wpath destination = in_directory / L"test_zip_file.zip";
+    path destination = in_directory / L"test_zip_file.zip";
 
     copy_file(source, destination);
 
@@ -105,10 +105,10 @@ wpath create_test_zip_file(const wpath& in_directory)
 /**
  * Return a DataObject with the contents of a zip file.
  */
-com_ptr<IDataObject> data_object_for_zipfile(const wpath& zip_file)
+com_ptr<IDataObject> data_object_for_zipfile(const path& zip_file)
 {
     shared_ptr<ITEMIDLIST_ABSOLUTE> zip_pidl = pidl_from_path(zip_file);
-    com_ptr<IShellFolder> zip_folder = 
+    com_ptr<IShellFolder> zip_folder =
         bind_to_handler_object<IShellFolder>(zip_pidl.get());
 
     com_ptr<IEnumIDList> enum_items;

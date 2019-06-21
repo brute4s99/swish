@@ -1,0 +1,34 @@
+# Copyright (C) 2015, 2016  Alexander Lamaison <swish@lammy.co.uk>
+#
+# This program is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program.  If not, see <http://www.gnu.org/licenses/>.
+
+set(SOURCES
+  parent_and_item.hpp
+  shell.hpp
+  shell.cpp
+  shell_item.hpp
+  shell_item_array.hpp)
+
+add_library(shell ${SOURCES})
+
+hunter_add_package(Comet)
+hunter_add_package(Washer)
+hunter_add_package(Boost COMPONENTS filesystem)
+
+find_package(Comet REQUIRED CONFIG)
+find_package(Washer REQUIRED CONFIG)
+find_package(Boost REQUIRED COMPONENTS filesystem)
+
+target_link_libraries(shell
+  PUBLIC Washer::washer Comet::comet Boost::boost Boost::filesystem)

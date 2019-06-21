@@ -24,10 +24,11 @@
     @endif
 */
 
-#include "swish/shell_folder/data_object/ShellDataObject.hpp"  // Test subject
-#include "swish/shell_folder/data_object/StorageMedium.hpp"  // Test subject
-#include "swish/shell_folder/shell.hpp"  // shell helper function
+#include "swish/shell_folder/data_object/ShellDataObject.hpp" // Test subject
+#include "swish/shell_folder/data_object/StorageMedium.hpp"   // Test subject
+#include "swish/shell/shell.hpp" // data_object_for_*
 
+#include "test/fixtures/local_sandbox_fixture.hpp"
 #include "test/common_boost/fixtures.hpp"
 #include "test/common_boost/helpers.hpp"
 #include "test/common_boost/data_object_utils.hpp" // DataObject zip stuff
@@ -35,53 +36,54 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/filesystem.hpp>
 
+#include <algorithm>
 #include <vector>
 #include <string>
 
-using swish::shell_folder::data_object::ShellDataObject;  // test subject
-using swish::shell_folder::data_object::PidlFormat;  // test subject
-using swish::shell_folder::data_object::StorageMedium;  // test subject
-using swish::shell_folder::data_object_for_file;
-using swish::shell_folder::data_object_for_directory;
+using swish::shell_folder::data_object::ShellDataObject; // test subject
+using swish::shell_folder::data_object::PidlFormat;      // test subject
+using swish::shell_folder::data_object::StorageMedium;   // test subject
+using swish::shell::data_object_for_file;
+using swish::shell::data_object_for_directory;
 
-using winapi::shell::pidl::apidl_t;
+using washer::shell::pidl::apidl_t;
 
 using test::ComFixture;
 using test::data_object_utils::create_test_zip_file;
 using test::data_object_utils::data_object_for_zipfile;
-using test::SandboxFixture;
+using test::fixtures::local_sandbox_fixture;
 
-using boost::filesystem::wpath;
+using boost::filesystem::path;
 using boost::test_tools::predicate_result;
 
 using std::vector;
 using std::wstring;
 
-namespace { // private
+namespace
+{ // private
 
-    /**
-     * Check that a PIDL and a filesystem path refer to the same item.
-     */
-    predicate_result pidl_path_equivalence(apidl_t pidl, wpath path)
+/**
+ * Check that a PIDL and a filesystem path refer to the same item.
+ */
+predicate_result pidl_path_equivalence(apidl_t pidl, path path)
+{
+    vector<wchar_t> name(MAX_PATH);
+    ::SHGetPathFromIDListW(pidl.get(), &name[0]);
+
+    if (!equivalent(path, &name[0]))
     {
-        vector<wchar_t> name(MAX_PATH);
-        ::SHGetPathFromIDListW(pidl.get(), &name[0]);
-
-        if (!equivalent(path, &name[0]))
-        {
-            predicate_result res(false);
-            res.message()
-                << "Different items [" << wstring(&name[0])
-                << " != " << path.file_string() << "]";
-            return res;
-        }
-
-        return true;
+        predicate_result res(false);
+        res.message() << "Different items [" << wstring(&name[0])
+                      << " != " << path.string() << "]";
+        return res;
     }
 
-    class DataObjectFixture : public ComFixture, public SandboxFixture
-    {
-    };
+    return true;
+}
+
+class DataObjectFixture : public ComFixture, public local_sandbox_fixture
+{
+};
 }
 
 #pragma region StorageMedium tests
@@ -91,7 +93,7 @@ BOOST_AUTO_TEST_SUITE(storage_medium_tests)
  * Create and destroy an instance of the StorageMedium helper object.
  * Check a few members to see if they are initialsed properly.
  */
-BOOST_AUTO_TEST_CASE( storage_medium_lifecycle )
+BOOST_AUTO_TEST_CASE(storage_medium_lifecycle)
 {
     {
         StorageMedium medium;
@@ -99,14 +101,13 @@ BOOST_AUTO_TEST_CASE( storage_medium_lifecycle )
         BOOST_REQUIRE(medium.empty());
         BOOST_REQUIRE_EQUAL(medium.get().hGlobal, static_cast<HGLOBAL>(NULL));
         BOOST_REQUIRE_EQUAL(medium.get().pstm, static_cast<IStream*>(NULL));
-        BOOST_REQUIRE_EQUAL(
-            medium.get().pUnkForRelease, static_cast<IUnknown*>(NULL));
+        BOOST_REQUIRE_EQUAL(medium.get().pUnkForRelease,
+                            static_cast<IUnknown*>(NULL));
     }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
 #pragma endregion
-
 
 #pragma region ShellDataObject tests
 BOOST_FIXTURE_TEST_SUITE(shell_data_object_tests, DataObjectFixture)
@@ -118,9 +119,9 @@ BOOST_FIXTURE_TEST_SUITE(shell_data_object_tests, DataObjectFixture)
  * backed by a real filesystem (i.e. not virtual).  This is a test of whether
  * we can recognise that or not.
  */
-BOOST_AUTO_TEST_CASE( cf_hdrop_format )
+BOOST_AUTO_TEST_CASE(cf_hdrop_format)
 {
-    wpath file = NewFileInSandbox();
+    path file = new_file_in_local_sandbox();
     ShellDataObject data_object(data_object_for_file(file).get());
 
     BOOST_REQUIRE(data_object.has_hdrop_format());
@@ -132,9 +133,9 @@ BOOST_AUTO_TEST_CASE( cf_hdrop_format )
  * A data object should not have this format for virtual items as they have no
  * filesystem path.  This is a test of whether we can recognise that or not.
  */
-BOOST_AUTO_TEST_CASE( cf_hdrop_format_virtual )
+BOOST_AUTO_TEST_CASE(cf_hdrop_format_virtual)
 {
-    wpath zip_file = create_test_zip_file(Sandbox());
+    path zip_file = create_test_zip_file(local_sandbox());
     ShellDataObject data_object(data_object_for_zipfile(zip_file).get());
 
     BOOST_REQUIRE(!data_object.has_hdrop_format());
@@ -148,9 +149,9 @@ BOOST_AUTO_TEST_CASE( cf_hdrop_format_virtual )
  *
  * @todo  Unset the format and test a negative result.
  */
-BOOST_AUTO_TEST_CASE( cfstr_shellidlist_format )
+BOOST_AUTO_TEST_CASE(cfstr_shellidlist_format)
 {
-    wpath file = NewFileInSandbox();
+    path file = new_file_in_local_sandbox();
     ShellDataObject data_object(data_object_for_file(file).get());
 
     BOOST_REQUIRE(data_object.has_pidl_format());
@@ -164,37 +165,23 @@ BOOST_AUTO_TEST_CASE( cfstr_shellidlist_format )
  *
  * @todo  Unset the format and test a negative result.
  */
-BOOST_AUTO_TEST_CASE( cfstr_shellidlist_format_virtual )
+BOOST_AUTO_TEST_CASE(cfstr_shellidlist_format_virtual)
 {
-    wpath zip_file = create_test_zip_file(Sandbox());
+    path zip_file = create_test_zip_file(local_sandbox());
     ShellDataObject data_object(data_object_for_zipfile(zip_file).get());
 
     BOOST_REQUIRE(data_object.has_pidl_format());
 }
 
 /**
- * Detecting the CFSTR_FILEDESCRIPTOR format for a filesystem item.
- *
- * This format is not expected for regular filesystem (non-virtual) items.  Here
- * we are checking that we recognise this absence correctly.
- */
-BOOST_AUTO_TEST_CASE( cf_file_group_descriptor_format )
-{
-    wpath file = NewFileInSandbox();
-    ShellDataObject data_object(data_object_for_file(file).get());
-
-    BOOST_REQUIRE(!data_object.has_file_group_descriptor_format());
-}
-
-/**
  * Detecting the CFSTR_FILEDESCRIPTOR format for virtual items.
  *
- * This format is expected for data objects holding virtual items.  This is a 
+ * This format is expected for data objects holding virtual items.  This is a
  * test of whether we can recognise that or not.
  */
-BOOST_AUTO_TEST_CASE( cf_file_group_descriptor_format_virtual )
+BOOST_AUTO_TEST_CASE(cf_file_group_descriptor_format_virtual)
 {
-    wpath zip_file = create_test_zip_file(Sandbox());
+    path zip_file = create_test_zip_file(local_sandbox());
     ShellDataObject data_object(data_object_for_zipfile(zip_file).get());
 
     BOOST_REQUIRE(data_object.has_file_group_descriptor_format());
@@ -210,12 +197,12 @@ BOOST_FIXTURE_TEST_SUITE(pidl_format_tests, DataObjectFixture)
  * Get a PIDL from a shell data object.
  *
  * Create the DataObject with one item, the test file in the sandbox.  Get
- * the item from the data object as a PIDL and check that it can be resolved 
+ * the item from the data object as a PIDL and check that it can be resolved
  * back the to filename from which the data object was created.
  */
-BOOST_AUTO_TEST_CASE( cfstr_shellidlist_item )
+BOOST_AUTO_TEST_CASE(cfstr_shellidlist_item)
 {
-    wpath file = NewFileInSandbox();
+    path file = new_file_in_local_sandbox();
     PidlFormat format(data_object_for_file(file));
 
     BOOST_REQUIRE_EQUAL(format.pidl_count(), 1U);
@@ -229,12 +216,12 @@ BOOST_AUTO_TEST_CASE( cfstr_shellidlist_item )
  * Get a PIDL's parent from a shell data object.
  *
  * Create the DataObject with one item, the test file in the sandbox.  Get
- * the parent folder of this item (the sandbox) from the data object as a 
+ * the parent folder of this item (the sandbox) from the data object as a
  * PIDL and check that it can be resolved back the sandbox's path.
  */
-BOOST_AUTO_TEST_CASE( cfstr_shellidlist_parent )
+BOOST_AUTO_TEST_CASE(cfstr_shellidlist_parent)
 {
-    wpath file = NewFileInSandbox();
+    path file = new_file_in_local_sandbox();
     PidlFormat format(data_object_for_file(file));
 
     BOOST_REQUIRE_EQUAL(format.pidl_count(), 1U);
@@ -247,17 +234,17 @@ BOOST_AUTO_TEST_CASE( cfstr_shellidlist_parent )
 /**
  * Try to get a non-existent PIDL from the data object.
  *
- * Create the DataObject with one item.  Attempt to get the @b second item 
+ * Create the DataObject with one item.  Attempt to get the @b second item
  * from the data object.  As there is no second item this should fail by
  * throwing an range_error exception.
  */
-BOOST_AUTO_TEST_CASE( cfstr_shellidlist_item_fail )
+BOOST_AUTO_TEST_CASE(cfstr_shellidlist_item_fail)
 {
-    wpath file = NewFileInSandbox();
+    path file = new_file_in_local_sandbox();
     PidlFormat format(data_object_for_file(file));
 
     BOOST_REQUIRE_EQUAL(format.pidl_count(), 1U);
-    BOOST_REQUIRE_THROW(format.file(1), std::range_error)
+    BOOST_REQUIRE_THROW(format.file(1), std::range_error);
 }
 
 /**
@@ -267,12 +254,15 @@ BOOST_AUTO_TEST_CASE( cfstr_shellidlist_item_fail )
  * the items from the data object as PIDLs and check that they can be resolved
  * back the to the filenames from which the data object was created.
  */
-BOOST_AUTO_TEST_CASE( cfstr_shellidlist_multiple_items )
+BOOST_AUTO_TEST_CASE(cfstr_shellidlist_multiple_items)
 {
-    wpath file1 = NewFileInSandbox();
-    wpath file2 = NewFileInSandbox();
-    wpath file3 = NewFileInSandbox();
-    PidlFormat format(data_object_for_directory(Sandbox()));
+    vector<path> files;
+    files.push_back(new_file_in_local_sandbox());
+    files.push_back(new_file_in_local_sandbox());
+    files.push_back(new_file_in_local_sandbox());
+    sort(files.begin(), files.end());
+
+    PidlFormat format(data_object_for_directory(local_sandbox()));
 
     BOOST_REQUIRE_EQUAL(format.pidl_count(), 3U);
 
@@ -280,11 +270,11 @@ BOOST_AUTO_TEST_CASE( cfstr_shellidlist_multiple_items )
     apidl_t pidl2 = format.file(1);
     apidl_t pidl3 = format.file(2);
 
-    BOOST_REQUIRE(pidl_path_equivalence(pidl1, file1));
-    BOOST_REQUIRE(pidl_path_equivalence(pidl2, file2));
-    BOOST_REQUIRE(pidl_path_equivalence(pidl3, file3));
+    BOOST_REQUIRE(pidl_path_equivalence(pidl1, files[0]));
+    BOOST_REQUIRE(pidl_path_equivalence(pidl2, files[1]));
+    BOOST_REQUIRE(pidl_path_equivalence(pidl3, files[2]));
 
-    BOOST_REQUIRE_THROW(format.file(4), std::range_error)
+    BOOST_REQUIRE_THROW(format.file(4), std::range_error);
 }
 
 /**
@@ -295,7 +285,7 @@ BOOST_AUTO_TEST_CASE( cfstr_shellidlist_multiple_items )
  * nothing is selected in a folder a NULL pointer is returned as the
  * DataObject.
  */
-BOOST_AUTO_TEST_CASE( null_dataobject )
+BOOST_AUTO_TEST_CASE(null_dataobject)
 {
     PidlFormat format(NULL);
 

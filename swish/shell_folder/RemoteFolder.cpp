@@ -1,28 +1,18 @@
-/**
-    @file
+/* Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2015
+   Alexander Lamaison <swish@lammy.co.uk>
 
-    Explorer folder that handles remote files and folders.
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by the
+   Free Software Foundation, either version 3 of the License, or (at your
+   option) any later version.
 
-    @if license
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
-    Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012, 2013
-    Alexander Lamaison <awl03@doc.ic.ac.uk>
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License along
-    with this program; if not, write to the Free Software Foundation, Inc.,
-    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-
-    @endif
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "RemoteFolder.h"
@@ -49,15 +39,15 @@
 #include "swish/trace.hpp" // trace
 #include "swish/windows_api.hpp" // SHBindToParent
 
-#include <winapi/shell/shell.hpp> // string_to_strret
-#include <winapi/window/window.hpp>
+#include <washer/shell/shell.hpp> // string_to_strret
+#include <washer/window/window.hpp>
 
 #include <comet/datetime.h> // datetime_t
 #include <comet/regkey.h>
 
 #include <boost/bind.hpp> // bind
 #include <boost/exception/diagnostic_information.hpp> // diagnostic_information
-#include <boost/filesystem/path.hpp> // wpath
+#include <boost/filesystem/path.hpp> // path
 #include <boost/locale.hpp> // translate
 #include <boost/make_shared.hpp> // make_shared
 #include <boost/throw_exception.hpp> // BOOST_THROW_EXCEPTION
@@ -79,13 +69,13 @@ using swish::remote_folder::provider_from_pidl;
 using swish::remote_folder::remote_itemid_view;
 using swish::tracing::trace;
 
-using winapi::shell::pidl::apidl_t;
-using winapi::shell::pidl::cpidl_t;
-using winapi::shell::pidl::pidl_t;
-using winapi::shell::property_key;
-using winapi::shell::string_to_strret;
-using winapi::window::window;
-using winapi::window::window_handle;
+using washer::shell::pidl::apidl_t;
+using washer::shell::pidl::cpidl_t;
+using washer::shell::pidl::pidl_t;
+using washer::shell::property_key;
+using washer::shell::string_to_strret;
+using washer::window::window;
+using washer::window::window_handle;
 
 using comet::com_ptr;
 using comet::com_error;
@@ -95,7 +85,7 @@ using comet::throw_com_error;
 using comet::variant_t;
 
 using boost::bind;
-using boost::filesystem::wpath;
+using boost::filesystem::path;
 using boost::locale::translate;
 using boost::make_shared;
 using boost::optional;
@@ -143,7 +133,7 @@ namespace {
         {
             if (full_name[0] != L'.')
             {
-                return wpath(full_name).stem();
+                return path(full_name).stem().wstring();
             }
             else
             {
@@ -152,7 +142,7 @@ namespace {
                 // the '.txt' extension.  In the second case we don't want
                 // to remove anything.
                 wstring bit_after_initial_dot = full_name.substr(1);
-                return L'.' + wpath(bit_after_initial_dot).stem();
+                return L'.' + path(bit_after_initial_dot).stem().wstring();
             }
         }
     }
@@ -629,12 +619,15 @@ variant_t CRemoteFolder::property(const property_key& key, const cpidl_t& pidl)
 /**
  * Create a toolbar command provider for the folder.
  */
-CComPtr<IExplorerCommandProvider> CRemoteFolder::command_provider(HWND hwnd)
+CComPtr<IExplorerCommandProvider> CRemoteFolder::command_provider(
+    HWND owning_hwnd)
 {
     TRACE("Request: IExplorerCommandProvider");
+
     return remote_folder_command_provider(
-        hwnd, root_pidl(), bind(&provider_from_pidl, root_pidl(), _1, _2),
-        bind(m_consumer_factory, hwnd)).get();
+        root_pidl(),
+        bind(&provider_from_pidl, root_pidl(), _1, _2),
+        bind(m_consumer_factory, owning_hwnd)).get();
 }
 
 /**
@@ -680,7 +673,7 @@ CComPtr<IQueryAssociations> CRemoteFolder::query_associations(
     else
     {
         // Initialise default assoc provider for given file extension
-        wstring extension = wpath(itemid.filename()).extension();
+        wstring extension = path(itemid.filename()).extension().wstring();
         if (extension.empty())
             extension = L".";
         hr = spAssoc->Init(

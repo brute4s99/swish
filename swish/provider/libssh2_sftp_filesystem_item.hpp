@@ -33,7 +33,6 @@
 #define SWISH_PROVIDER_LIBSSH2_SFTP_FILESYSTEM_ITEM_HPP
 
 #include "swish/provider/sftp_filesystem_item.hpp"
-#include "swish/provider/sftp_provider_path.hpp"
 
 #include <boost/cstdint.hpp> // uint64_t
 #include <boost/optional.hpp>
@@ -42,17 +41,20 @@
 
 #include <string>
 
-namespace ssh {
-namespace filesystem {
+namespace ssh
+{
+namespace filesystem
+{
 
 class file_attributes;
 class sftp_file;
-
 }
 }
 
-namespace swish {
-namespace provider {
+namespace swish
+{
+namespace provider
+{
 
 /**
  * An entry in an SFTP directory retrieved by the libssh2 backend.
@@ -60,12 +62,11 @@ namespace provider {
 class libssh2_sftp_filesystem_item : public sftp_filesystem_item_interface
 {
 public:
-
     /**
      * Create filesystem entry from libssh2 filesystem item representation.
      */
-    static sftp_filesystem_item create_from_libssh2_file(
-        const ssh::filesystem::sftp_file& file);
+    static sftp_filesystem_item
+    create_from_libssh2_file(const ssh::filesystem::sftp_file& file);
 
     /**
      * Create filesystem entry from libssh2 filesystem item representation using
@@ -77,20 +78,18 @@ public:
      * Items created with this constructor will *not* be able to return the
      * user name or group name as a string.
      *
-     * @param char_blob_file_name
-     *        Filename which is usually a UTF-8 string but that's not
-     *        guaranteed. At this point all we know is it is a binary blob of
-     *        chars.
+     * @param file_name
+     *        Filename.
      *
      * @param attributes
      *        Object containing the file's details.
      */
     static sftp_filesystem_item create_from_libssh2_attributes(
-        const std::string& char_blob_file_name,
+        const ssh::filesystem::path& file_name,
         const ssh::filesystem::file_attributes& attributes);
 
-    virtual BOOST_SCOPED_ENUM(type) type() const;
-    virtual sftp_provider_path filename() const;
+    virtual item_type type() const;
+    virtual ssh::filesystem::path filename() const;
     virtual unsigned long permissions() const;
     virtual boost::optional<std::wstring> owner() const;
     virtual unsigned long uid() const;
@@ -101,20 +100,17 @@ public:
     virtual comet::datetime_t last_modified() const;
 
 private:
+    libssh2_sftp_filesystem_item(const ssh::filesystem::sftp_file& file);
 
     libssh2_sftp_filesystem_item(
-        const ssh::filesystem::sftp_file& file);
-
-    libssh2_sftp_filesystem_item(
-        const std::string& char_blob_file_name,
+        const ssh::filesystem::path& file_name,
         const ssh::filesystem::file_attributes& attributes);
 
-    void common_init(
-        const std::string& char_blob_file_name,
-        const ssh::filesystem::file_attributes& attributes);
+    void common_init(const ssh::filesystem::path& file_name,
+                     const ssh::filesystem::file_attributes& attributes);
 
-    BOOST_SCOPED_ENUM(type) m_type;
-    sftp_provider_path m_path;
+    item_type m_type;
+    ssh::filesystem::path m_path;
     unsigned long m_permissions;
     boost::optional<std::wstring> m_owner;
     boost::optional<std::wstring> m_group;
@@ -124,7 +120,7 @@ private:
     comet::datetime_t m_modified;
     comet::datetime_t m_accessed;
 };
-
-}}
+}
+}
 
 #endif

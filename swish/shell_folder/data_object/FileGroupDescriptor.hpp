@@ -1,7 +1,7 @@
 /**
     @file
 
-    FILEDESCRIPTOR clipboard format wrapper.
+    FILEDESCRIPTORW clipboard format wrapper.
 
     @if license
 
@@ -30,7 +30,6 @@
 
 #include <boost/throw_exception.hpp> // BOOST_THROW_EXCEPTION
 #include <boost/shared_ptr.hpp> // shared_ptr
-#include <boost/filesystem.hpp> // wpath
 #pragma warning(push)
 #pragma warning(disable:4244) // conversion from uint64_t to uint32_t
 #include <boost/date_time/posix_time/posix_time_types.hpp> // ptime
@@ -43,7 +42,9 @@
 #include <boost/cstdint.hpp> // unint64_t
 
 #include <stdexcept> // out_of_range, length_error, logic_error
+#include <string>
 
+#include <shlobj.h> // FILEDESCRIPTOR, FILEGROUPDESCRIPTOR
 #include <Windows.h> // HGLOBAL, GetLastError
 
 #pragma warning(push)
@@ -101,17 +102,17 @@ public:
 };
 
 /**
- * C++ interface to the FILEDESCRIPTOR structure.
+ * C++ interface to the FILEDESCRIPTORW structure.
  */
-class Descriptor : private FILEDESCRIPTOR
+class Descriptor : private FILEDESCRIPTORW
 {
 public:
-    
-    Descriptor() : FILEDESCRIPTOR() {}
-    Descriptor(const FILEDESCRIPTOR& d) : FILEDESCRIPTOR(d) {}
+
+    Descriptor() : FILEDESCRIPTORW() {}
+    Descriptor(const FILEDESCRIPTORW& d) : FILEDESCRIPTORW(d) {}
     // default copy, assign and destruct OK
 
-    const FILEDESCRIPTOR& get() const
+    const FILEDESCRIPTORW& get() const
     {
         return *this;
     }
@@ -119,24 +120,30 @@ public:
     /**
      * Return the stored filename or relative path.
      */
-    boost::filesystem::wpath path() const
+    std::wstring path() const
     {
         return cFileName;
     }
 
     /**
      * Save given path as the descriptor filename/path.
+     *
+     * FGD paths are relative paths using backslashes as separators.  We allow
+     * the path argument to use forward slashes, andthey will be converted
+     * accordingly.
      */
-    void path(const boost::filesystem::wpath& path)
+    void path(std::wstring path)
     {
+        std::replace(path.begin(), path.end(), L'/', L'\\');
+
         static const size_t BUFFER_SIZE =
             sizeof(cFileName) / sizeof(cFileName[0]);
 
-        if (path.file_string().size() >= BUFFER_SIZE)
+        if (path.size() >= BUFFER_SIZE)
             BOOST_THROW_EXCEPTION(
                 std::length_error("Path greater than MAX_PATH"));
 
-        size_t count = path.file_string().copy(cFileName, BUFFER_SIZE - 1);
+        size_t count = path.copy(cFileName, BUFFER_SIZE - 1);
         cFileName[count] = L'\0';
     }
 
@@ -278,8 +285,8 @@ private:
     bool _valid_field(DWORD field) const
     {
         return !!(dwFlags & field);
-    }    
-    
+    }
+
     /**
      * Set the validity of the given field.
      */
@@ -287,7 +294,7 @@ private:
     {
         dwFlags = dwFlags | field;
     }
-    
+
     /**
      * Unset the validity of the given field.
      */
@@ -297,10 +304,10 @@ private:
     }
 };
 
-BOOST_STATIC_ASSERT(sizeof(Descriptor) == sizeof(FILEDESCRIPTOR));
+BOOST_STATIC_ASSERT(sizeof(Descriptor) == sizeof(FILEDESCRIPTORW));
 
 /**
- * Wrapper around the FILEGROUPDESCRIPTOR structure.
+ * Wrapper around the FILEGROUPDESCRIPTORW structure.
  *
  * This wrapper adds construction as well as access to the FILEDESCRIPTORS
  * contained within it.
@@ -310,14 +317,14 @@ class FileGroupDescriptor
 public:
 
     /**
-     * Create wrapper around an existing FILEGROUPDESCRIPTOR in global memory.
+     * Create wrapper around an existing FILEGROUPDESCRIPTORW in global memory.
      */
     FileGroupDescriptor(HGLOBAL hglobal) : m_lock(hglobal) {}
 
     // default copy, assign and destruct OK
 
     /**
-     * Number of FILEDESCRIPTORS in the FILEGROUPDESCRIPTOR.
+     * Number of FILEDESCRIPTORS in the FILEGROUPDESCRIPTORW.
      */
     size_t size() const
     {
@@ -325,28 +332,28 @@ public:
     }
 
     /**
-     * Return a reference to the ith FILEDESCRIPTOR as a Descriptor.
+     * Return a reference to the ith FILEDESCRIPTORW as a Descriptor.
      */
     Descriptor& operator[](size_t i) const
     {
         if (i >= size())
             BOOST_THROW_EXCEPTION(
                 std::out_of_range(
-                    "Attempt to access FILEDESCRIPTOR out of range"));
+                    "Attempt to access FILEDESCRIPTORW out of range"));
 
         return *static_cast<Descriptor*>(&m_lock.get()->fgd[i]);
     }
 
 private:
-    GlobalLocker<FILEGROUPDESCRIPTOR> m_lock;
+    GlobalLocker<FILEGROUPDESCRIPTORW> m_lock;
 };
 
 /**
- * Allocate a FILEGROUPDESCRIPTOR in global memory holding the given 
+ * Allocate a FILEGROUPDESCRIPTORW in global memory holding the given
  * descriptors.
  *
  * The descriptor are give as a [first, last) range who element type is
- * copyable to FILEDESCRIPTOR.
+ * copyable to FILEDESCRIPTORW.
  *
  * @returns  HGLOBAL handle to the allocated global memory.  Caller must free.
  */
@@ -358,8 +365,8 @@ HGLOBAL group_descriptor_from_range(It first, It last)
         BOOST_THROW_EXCEPTION(
             std::length_error("Range must have at least one descriptor."));
 
-    size_t bytes = 
-        sizeof(FILEGROUPDESCRIPTOR) + (count * sizeof(FILEDESCRIPTOR));
+    size_t bytes =
+        sizeof(FILEGROUPDESCRIPTORW ) + (count * sizeof(FILEDESCRIPTORW));
 
     HGLOBAL hglobal = ::GlobalAlloc(GMEM_MOVEABLE, bytes);
     if (!hglobal)
@@ -369,7 +376,7 @@ HGLOBAL group_descriptor_from_range(It first, It last)
 
     try
     {
-        GlobalLocker<FILEGROUPDESCRIPTOR> lock(hglobal);
+        GlobalLocker<FILEGROUPDESCRIPTORW> lock(hglobal);
         lock.get()->cItems = boost::numeric_cast<UINT>(count);
         std::copy(first, last, &lock.get()->fgd[0]);
         // last arg above: decay array to stop false +ive by checked iterator
