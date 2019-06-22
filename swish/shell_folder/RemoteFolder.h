@@ -25,7 +25,7 @@
 #include "swish/CoFactory.hpp"  // CComObject factory
 #include "swish/provider/sftp_provider.hpp" // sftp_provider, ISftpConsumer
 #include "swish/remote_folder/columns.hpp" // Column
-#include "Swish.h" // For CRemoteFolder UUID
+#include "swish/Swish.h" // For CRemoteFolder UUID
 
 #include "swish/atl.hpp"        // Common ATL setup
 

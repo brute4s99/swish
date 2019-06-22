@@ -56,7 +56,7 @@ public:
         int err = ::WSAStartup(MAKEWORD(2, 2), &wsadata);
         if (err)
             throw boost::system::system_error(
-                err, boost::system::get_system_category());
+                err, boost::system::system_category());
     }
 
     virtual ~WinsockFixture()

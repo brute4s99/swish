@@ -48,11 +48,11 @@ public:
 
     typedef message_map<WM_COMMAND> messages;
 
-    virtual LRESULT handle_message(
-        UINT message, WPARAM wparam, LPARAM lparam)
-    {
-        return dispatch_message(this, message, wparam, lparam);
-    }
+    // virtual LRESULT handle_message(
+    //     UINT message, WPARAM wparam, LPARAM lparam)
+    // {
+    //     // return dispatch_message(this, message, wparam, lparam);
+    // }
 
     /**
      * What to do if this window is sent a command message by a child window.

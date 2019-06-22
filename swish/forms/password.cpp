@@ -62,11 +62,11 @@ namespace {
             m_form.add_control(label(prompt, 7, 7, 149, 8));
 
             button ok(translate(L"OK"), 162, 7, 50, 16, true);
-            ok.on_click().connect(bind(&PasswordForm::on_ok, this));
+            // ok.on_click().connect(bind(&PasswordForm::on_ok, this));
             m_form.add_control(ok);
 
             button cancel(translate(L"Cancel"), 162, 26, 50, 16);
-            cancel.on_click().connect(m_form.killer());
+            // cancel.on_click().connect(m_form.killer());
             m_form.add_control(cancel);
             
             m_form.show(hwnd_owner);

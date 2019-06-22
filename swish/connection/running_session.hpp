@@ -19,6 +19,7 @@
 #include <ssh/session.hpp>
 
 #include <boost/asio/ip/tcp.hpp> // Boost sockets
+#include<boost/asio.hpp>
 
 #include <memory>
 #include <string>

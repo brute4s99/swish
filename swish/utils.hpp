@@ -122,7 +122,7 @@ inline typename T::ToType ConvertString(const typename T::FromType& from)
     }
 
     throw boost::system::system_error(
-        ::GetLastError(), boost::system::get_system_category());
+        ::GetLastError(), boost::system::system_category());
 }
 
 /**
@@ -195,7 +195,7 @@ inline typename T::return_type current_user()
     {
         BOOST_THROW_EXCEPTION(
             boost::system::system_error(
-                err, boost::system::get_system_category()));
+                err, boost::system::system_category()));
     }
 
     // Repeat call with a buffer of required size
@@ -210,7 +210,7 @@ inline typename T::return_type current_user()
         {
             BOOST_THROW_EXCEPTION(
                 boost::system::system_error(
-                    ::GetLastError(), boost::system::get_system_category()));
+                    ::GetLastError(), boost::system::system_category()));
         }
     }
 
@@ -261,7 +261,7 @@ inline T environment_variable(const T& key)
     if (len == 0)
         BOOST_THROW_EXCEPTION(
             boost::system::system_error(
-                ::GetLastError(), boost::system::get_system_category()));
+                ::GetLastError(), boost::system::system_category()));
 
     return T(buf.begin(), buf.begin() + len);
 }

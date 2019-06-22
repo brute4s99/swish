@@ -48,7 +48,7 @@
 #include <boost/function.hpp> // function
 #include <boost/make_shared.hpp> // make_shared
 #include <boost/shared_ptr.hpp> // shared_ptr
-#include <boost/signal.hpp> // signal
+// #include <boost/signal.hpp> // signal
 #include <boost/throw_exception.hpp> // BOOST_THROW_EXCEPTION
 #include <boost/weak_ptr.hpp> // weak_ptr
 
@@ -76,7 +76,7 @@ namespace detail {
         virtual LRESULT handle_message(
             UINT message, WPARAM wparam, LPARAM lparam)
         {
-            return dispatch_message(this, message, wparam, lparam);
+            // return dispatch_message(this, message, wparam, lparam);
         }
 
         typedef message_map<WM_INITDIALOG, WM_ACTIVATE, WM_CLOSE> messages;
@@ -137,13 +137,13 @@ namespace detail {
         /// @name Event delegates
         // @{
 
-        boost::signal<bool ()>& on_create() { return m_on_create; }
+        // boost::signal<bool ()>& on_create() { return m_on_create; }
 
-        boost::signal<void (bool)>& on_activating() { return m_on_activating; }
-        boost::signal<void (bool)>& on_activate() { return m_on_activate; }
+        // boost::signal<void (bool)>& on_activating() { return m_on_activating; }
+        // boost::signal<void (bool)>& on_activate() { return m_on_activate; }
 
-        boost::signal<void ()>& on_deactivating() { return m_on_deactivating; }
-        boost::signal<void ()>& on_deactivate() { return m_on_deactivate; }
+        // boost::signal<void ()>& on_deactivating() { return m_on_deactivating; }
+        // boost::signal<void ()>& on_deactivate() { return m_on_deactivate; }
 
         // @}
 
@@ -156,39 +156,39 @@ namespace detail {
             return default_message_handler(m);
         }
 
-        LRESULT on(message<WM_ACTIVATE> m)
-        {
-            if (m.active())
-                m_on_activating(m.by_mouse());
-            else if (m.deactive())
-                m_on_deactivating();
-            else
-                assert(!"Inconsistent message state");
+        // LRESULT on(message<WM_ACTIVATE> m)
+        // {
+            // if (m.active())
+            //     m_on_activating(m.by_mouse());
+            // else if (m.deactive())
+            //     m_on_deactivating();
+            // else
+            //     assert(!"Inconsistent message state");
 
-            LRESULT res = default_message_handler(m);
+            // LRESULT res = default_message_handler(m);
 
-            if (m.active())
-                m_on_activate(m.by_mouse());
-            else if (m.deactive())
-                m_on_deactivate();
-            else
-                assert(!"Inconsistent message state");
+            // if (m.active())
+            //     m_on_activate(m.by_mouse());
+            // else if (m.deactive())
+            //     m_on_deactivate();
+            // else
+            //     assert(!"Inconsistent message state");
 
-            return res;
-        }
+        //     return res;
+        // }
 
-        LRESULT on(message<WM_INITDIALOG> /*message*/)
-        {
+        // LRESULT on(message<WM_INITDIALOG> /*message*/)
+        // {
             // All our controls should have been created by now so stop
             // monitoring window creation.  This prevents problems with
             // the system menu which is created later.
-            unhook_window_creation();
+            // unhook_window_creation();
 
-            if (!m_on_create.empty())
-                return m_on_create() == TRUE;
-            else
-                return TRUE; // give default control focus
-        }
+            // if (!m_on_create.empty())
+                // return m_on_create() == TRUE;
+            // else
+                // return TRUE; // give default control focus
+        // }
         
         // @}
 
@@ -228,12 +228,12 @@ namespace detail {
         /// @name Events
         // @{
         
-        boost::signal<bool ()> m_on_create;
+        // boost::signal<bool ()> m_on_create;
 
-        boost::signal<void (bool)> m_on_activating;
-        boost::signal<void (bool)> m_on_activate;
-        boost::signal<void ()> m_on_deactivating;
-        boost::signal<void ()> m_on_deactivate;
+        // boost::signal<void (bool)> m_on_activating;
+        // boost::signal<void (bool)> m_on_activate;
+        // boost::signal<void ()> m_on_deactivating;
+        // boost::signal<void ()> m_on_deactivate;
 
         // @}
     };
@@ -337,12 +337,12 @@ public:
     /// @name  Event delegates.
     // @{
 
-    boost::signal<bool ()>& on_create() { return impl()->on_create(); }
-    boost::signal<void (bool)>& on_activating() { return impl()->on_activating(); }
-    boost::signal<void (bool)>& on_activate() { return impl()->on_activate(); }
+    // boost::signal<bool ()>& on_create() { return impl()->on_create(); }
+    // boost::signal<void (bool)>& on_activating() { return impl()->on_activating(); }
+    // boost::signal<void (bool)>& on_activate() { return impl()->on_activate(); }
 
-    boost::signal<void ()>& on_deactivating() { return impl()->on_deactivating(); }
-    boost::signal<void ()>& on_deactivate() { return impl()->on_deactivate(); }
+    // boost::signal<void ()>& on_deactivating() { return impl()->on_deactivating(); }
+    // boost::signal<void ()>& on_deactivate() { return impl()->on_deactivate(); }
 
     // @}
 };

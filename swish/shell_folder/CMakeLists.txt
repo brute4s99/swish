@@ -62,10 +62,12 @@ target_include_directories(shell_folder
   PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/shell_folder.dir/${CMAKE_CFG_INTDIR})
 
 find_package(Comet)
+find_package(WTL)
 find_package(Washer)
 find_package(Boost COMPONENTS date_time system locale filesystem)
 
 find_package(Comet REQUIRED CONFIG)
+find_package(WTL REQUIRED CONFIG)
 find_package(Washer REQUIRED CONFIG)
 find_package(Boost REQUIRED COMPONENTS date_time system locale filesystem)
 
@@ -73,5 +75,6 @@ target_link_libraries(shell_folder
   PRIVATE
   host_folder remote_folder frontend nse drop_target urlmon
   PUBLIC
+  WTL:WTL
   Washer::washer Comet::comet Boost::boost Boost::date_time Boost::system
   Boost::locale Boost::filesystem)

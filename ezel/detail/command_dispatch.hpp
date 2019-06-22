@@ -103,24 +103,24 @@ inline void dispatch_command(
         obj, command_id, wparam, lparam, boost::is_same<T, T::super>::type());
 }
 
-template<typename It, typename End, typename T>
-inline void dispatch_command(
-    T* obj, WORD command_id, WPARAM wparam, LPARAM lparam, boost::mpl::false_)
-{
-    typedef boost::mpl::deref<It>::type Front;
-    typedef boost::mpl::next<It>::type Next;
+// template<typename It, typename End, typename T>
+// inline void dispatch_command(
+//     T* obj, WORD command_id, WPARAM wparam, LPARAM lparam, boost::mpl::false_)
+// {
+//     typedef boost::mpl::deref<It>::type Front;
+//     typedef boost::mpl::next<It>::type Next;
 
-    if(command_id == Front::value)
-    {
-        return obj->on(command<Front::value>(wparam, lparam));
-    }
-    else
-    {
-        return dispatch_command<Next, End>(
-            obj, command_id, wparam, lparam,
-            typename boost::is_same<Next, End>::type());
-    }
-}
+//     if(command_id == Front::value)
+//     {
+//         return obj->on(command<Front::value>(wparam, lparam));
+//     }
+//     else
+//     {
+//         return dispatch_command<Next, End>(
+//             obj, command_id, wparam, lparam,
+//             typename boost::is_same<Next, End>::type());
+//     }
+// }
 
 /**
  * Command dispatcher.

@@ -51,7 +51,7 @@ public:
     virtual void handle_command(
         WORD command_id, WPARAM wparam, LPARAM lparam)
     {
-        dispatch_command(this, command_id, wparam, lparam);
+        // dispatch_command(this, command_id, wparam, lparam);
     }
 
     checkbox_impl(
@@ -68,13 +68,13 @@ public:
         return WS_CHILD | WS_VISIBLE | BS_CHECKBOX | WS_TABSTOP;
     }
 
-    boost::signal<void ()>& on_click() { return m_on_click; }
+    // boost::signal<void ()>& on_click() { return m_on_click; }
 
     void on(command<BN_CLICKED>) { m_on_click(); }
 
 private:
 
-    boost::signal<void ()> m_on_click;
+    // boost::signal<void ()> m_on_click;
     bool m_default;
 };
 

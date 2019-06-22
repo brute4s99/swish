@@ -372,7 +372,7 @@ HGLOBAL group_descriptor_from_range(It first, It last)
     if (!hglobal)
         BOOST_THROW_EXCEPTION(
             boost::system::system_error(
-                ::GetLastError(), boost::system::get_system_category()));
+                ::GetLastError(), boost::system::system_category()));
 
     try
     {

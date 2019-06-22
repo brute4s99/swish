@@ -35,7 +35,7 @@
 #include <washer/gui/commands.hpp> // command
 
 #include <boost/shared_ptr.hpp> // shared_ptr
-#include <boost/signal.hpp> // signal
+// #include <boost/signal.hpp> // signal
 
 #include <string>
 
@@ -52,7 +52,7 @@ public:
     virtual void handle_command(
         WORD command_id, WPARAM wparam, LPARAM lparam)
     {
-        dispatch_command(this, command_id, wparam, lparam);
+        // dispatch_command(this, command_id, wparam, lparam);
     }
 
     button_impl(
@@ -73,13 +73,13 @@ public:
         return style;
     }
 
-    boost::signal<void ()>& on_click() { return m_on_click; }
+    // boost::signal<void ()>& on_click() { return m_on_click; }
 
-    void on(command<BN_CLICKED>) { m_on_click(); }
+    // void on(command<BN_CLICKED>) { m_on_click(); }
 
 private:
 
-    boost::signal<void ()> m_on_click;
+    // boost::signal<void ()> m_on_click;
     bool m_default;
 };
 
@@ -94,7 +94,7 @@ public:
             boost::shared_ptr<button_impl>(
                 new button_impl(title, left, top, width, height, default))) {}
 
-    boost::signal<void ()>& on_click() { return impl()->on_click(); }
+    // boost::signal<void ()>& on_click() { return impl()->on_click(); }
 
     short left() const { return impl()->left(); }
     short top() const { return impl()->top(); }

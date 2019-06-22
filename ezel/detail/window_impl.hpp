@@ -42,7 +42,7 @@
 #include <boost/exception/diagnostic_information.hpp> // diagnostic_information
 #include <boost/make_shared.hpp> // make_shared
 #include <boost/noncopyable.hpp> // noncopyable
-#include <boost/signal.hpp> // signal
+// #include <boost/signal.hpp> // signal
 
 #include <cassert> // assert
 #include <string>
@@ -239,17 +239,17 @@ public:
         messages;
     typedef command_map<-1> commands;
 
-    virtual LRESULT handle_message(
-        UINT message_id, WPARAM wparam, LPARAM lparam)
-    {
-        return dispatch_message(this, message_id, wparam, lparam);
-    }
+    // virtual LRESULT handle_message(
+    //     UINT message_id, WPARAM wparam, LPARAM lparam)
+    // {
+    //     // return dispatch_message(this, message_id, wparam, lparam);
+    // }
 
-    virtual void handle_command(
-        WORD command_id, WPARAM wparam, LPARAM lparam)
-    {
-        dispatch_command(this, command_id, wparam, lparam);
-    }
+    // virtual void handle_command(
+    //     WORD command_id, WPARAM wparam, LPARAM lparam)
+    // {
+    //     // dispatch_command(this, command_id, wparam, lparam);
+    // }
 
     window_impl(
         const std::wstring& text, short left, short top, short width,
@@ -334,17 +334,17 @@ public:
 
     LRESULT on(message<WM_SETTEXT> m)
     {
-        m_on_text_change(m.text<wchar_t>());
+        // m_on_text_change(m.text<wchar_t>());
         LRESULT res = default_message_handler(m);
-        m_on_text_changed();
+        // m_on_text_changed();
         return res;
     }
 
     LRESULT on(message<WM_SHOWWINDOW> m)
     {
-        m_on_showing(m.state());
+        // m_on_showing(m.state());
         LRESULT res = default_message_handler(m);
-        m_on_show(m.state());
+        // m_on_show(m.state());
         return res;
     }
 
@@ -414,14 +414,14 @@ public:
     /// @name Event delegates
     // @{
 
-    boost::signal<void (const wchar_t*)>& on_text_change()
-    { return m_on_text_change; }
+    // boost::signal<void (const wchar_t*)>& on_text_change()
+    // { return m_on_text_change; }
 
-    boost::signal<void ()>& on_text_changed()
-    { return m_on_text_changed; }
+    // boost::signal<void ()>& on_text_changed()
+    // { return m_on_text_changed; }
 
-    boost::signal<void (bool)>& on_showing() { return m_on_showing; }
-    boost::signal<void (bool)>& on_show() { return m_on_show; }
+    // boost::signal<void (bool)>& on_showing() { return m_on_showing; }
+    // boost::signal<void (bool)>& on_show() { return m_on_show; }
 
     // @}
 
@@ -526,10 +526,10 @@ private:
     /// @name Events
     // @{
 
-    boost::signal<void (const wchar_t*)> m_on_text_change;
-    boost::signal<void ()> m_on_text_changed;
-    boost::signal<void (bool)> m_on_showing;
-    boost::signal<void (bool)> m_on_show;
+    // boost::signal<void (const wchar_t*)> m_on_text_change;
+    // boost::signal<void ()> m_on_text_changed;
+    // boost::signal<void (bool)> m_on_showing;
+    // boost::signal<void (bool)> m_on_show;
 
     // @}
 };

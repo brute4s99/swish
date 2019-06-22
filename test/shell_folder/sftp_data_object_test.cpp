@@ -70,7 +70,7 @@ using ssh::filesystem::sftp_filesystem;
 
 using boost::numeric_cast;
 using boost::system::system_error;
-using boost::system::get_system_category;
+using boost::system::system_category;
 using boost::posix_time::from_time_t;
 using boost::test_tools::predicate_result;
 

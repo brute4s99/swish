@@ -37,12 +37,11 @@ set(SOURCES
 add_custom_target(ssh-src SOURCES ${SOURCES})
 add_library(ssh INTERFACE)
 
-find_package(Boost
-  COMPONENTS system locale filesystem iostreams)
 find_package(Boost REQUIRED
-  COMPONENTS system locale filesystem iostreams)
+    COMPONENTS
+    system locale filesystem iostreams)
 target_include_directories(ssh
-  INTERFACE ${CMAKE_CURRENT_SOURCE_DIR} ${Boost_INCLUDE_DIRS})
+INTERFACE ${CMAKE_CURRENT_SOURCE_DIR} ${Boost_INCLUDE_DIRS})
 
 find_package(Libssh2)
 find_package(Libssh2 REQUIRED CONFIG)

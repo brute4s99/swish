@@ -71,7 +71,7 @@ public:
     {
         if (!m_mem)
             throw boost::system::system_error(
-                ::GetLastError(), boost::system::get_system_category());
+                ::GetLastError(), boost::system::system_category());
     }
 
     /**
@@ -115,7 +115,7 @@ public:
     {
         if (!m_mem)
             throw boost::system::system_error(
-                ::GetLastError(), boost::system::get_system_category());
+                ::GetLastError(), boost::system::system_category());
     }
 
     /**

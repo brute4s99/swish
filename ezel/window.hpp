@@ -29,7 +29,7 @@
 #pragma once
 
 #include <boost/shared_ptr.hpp> // shared_ptr
-#include <boost/signal.hpp> // signal
+// #include <boost/signal.hpp> // signal
 
 #include <string>
 
@@ -63,14 +63,14 @@ public:
     /// @name Events
     // @{
 
-    boost::signal<void (bool)>& on_showing() { return impl()->on_showing(); }
-    boost::signal<void (bool)>& on_show() { return impl()->on_show(); }
+    // boost::signal<void (bool)>& on_showing() { return impl()->on_showing(); }
+    // boost::signal<void (bool)>& on_show() { return impl()->on_show(); }
 
-    boost::signal<void (const wchar_t*)>& on_text_change()
-    { return impl()->on_text_change(); }
+    // boost::signal<void (const wchar_t*)>& on_text_change()
+    // { return impl()->on_text_change(); }
 
-    boost::signal<void ()>& on_text_changed()
-    { return impl()->on_text_changed(); }
+    // boost::signal<void ()>& on_text_changed()
+    // { return impl()->on_text_changed(); }
 
     // @}
 

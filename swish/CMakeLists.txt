@@ -16,8 +16,8 @@
 
 add_subdirectory(connection)
 add_subdirectory(drop_target)
-add_subdirectory(forms)
-add_subdirectory(frontend)
+#add_subdirectory(forms)
+#add_subdirectory(frontend)
 add_subdirectory(host_folder)
 add_subdirectory(nse)
 add_subdirectory(provider)

@@ -124,20 +124,20 @@ namespace {
             // every time a field is changed we revalidate all the fields,
             // enable or disable the OK button and a display a status message
             // if needed
-            m_name_box.on_change().connect(
-                bind(&AddHostForm::update_validity, this));
-            m_host_box.on_change().connect(
-                bind(&AddHostForm::update_validity, this));
-            m_user_box.on_change().connect(
-                bind(&AddHostForm::update_validity, this));
-            m_path_box.on_change().connect(
-                bind(&AddHostForm::update_validity, this));
-            m_port_box.on_change().connect(
-                bind(&AddHostForm::update_validity, this));
+            // m_name_box.on_change().connect(
+            //     bind(&AddHostForm::update_validity, this));
+            // m_host_box.on_change().connect(
+            //     bind(&AddHostForm::update_validity, this));
+            // m_user_box.on_change().connect(
+            //     bind(&AddHostForm::update_validity, this));
+            // m_path_box.on_change().connect(
+            //     bind(&AddHostForm::update_validity, this));
+            // m_port_box.on_change().connect(
+            //     bind(&AddHostForm::update_validity, this));
 
-            // TODO: clarify difference between on_change and on_text_changed
-            m_port_box.on_text_changed().connect(
-                bind(&AddHostForm::update_validity, this));
+            // // TODO: clarify difference between on_change and on_text_changed
+            // m_port_box.on_text_changed().connect(
+            //     bind(&AddHostForm::update_validity, this));
 
             m_form.add_control(
                 label(translate(L"New Host", L"&Label:"), 12, 11, 28, 8));
@@ -179,11 +179,11 @@ namespace {
             
             m_form.add_control(line(0, 147, 277));
 
-            m_ok.on_click().connect(bind(&AddHostForm::on_ok, this));
+            // m_ok.on_click().connect(bind(&AddHostForm::on_ok, this));
             m_form.add_control(m_ok);
 
             button cancel(translate(L"Cancel"), 216, 155, 50, 14);
-            cancel.on_click().connect(m_form.killer());
+            // cancel.on_click().connect(m_form.killer());
             m_form.add_control(cancel);
 
             m_form.add_control(m_status);

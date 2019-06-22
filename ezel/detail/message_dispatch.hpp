@@ -96,32 +96,32 @@ inline LRESULT dispatch_message_next(
  * we create a dispatch for the superclasses message map and delegate
  * dispatch there.
  */
-template<typename It, typename End, typename T>
-inline LRESULT dispatch_message(
-    T* obj, UINT message_id, WPARAM wparam, LPARAM lparam, boost::mpl::true_)
-{
-    return dispatch_message_next<It, End>(
-        obj, message_id, wparam, lparam, boost::is_same<T, T::super>::type());
-}
+// template<typename It, typename End, typename T>
+// inline LRESULT dispatch_message(
+//     T* obj, UINT message_id, WPARAM wparam, LPARAM lparam, boost::mpl::true_)
+// {
+//     return dispatch_message_next<It, End>(
+//         obj, message_id, wparam, lparam, boost::is_same<T, T::super>::type());
+// }
 
-template<typename It, typename End, typename T>
-inline LRESULT dispatch_message(
-    T* obj, UINT message_id, WPARAM wparam, LPARAM lparam, boost::mpl::false_)
-{
-    typedef boost::mpl::deref<It>::type Front;
-    typedef boost::mpl::next<It>::type Next;
+// template<typename It, typename End, typename T>
+// inline LRESULT dispatch_message(
+//     T* obj, UINT message_id, WPARAM wparam, LPARAM lparam, boost::mpl::false_)
+// {
+//     typedef boost::mpl::deref<It>::type Front;
+//     typedef boost::mpl::next<It>::type Next;
 
-    if(message_id == Front::value)
-    {
-        return obj->on(message<Front::value>(wparam, lparam));
-    }
-    else
-    {
-        return dispatch_message<Next, End>(
-            obj, message_id, wparam, lparam,
-            typename boost::is_same<Next, End>::type());
-    }
-}
+//     if(message_id == Front::value)
+//     {
+//         return obj->on(message<Front::value>(wparam, lparam));
+//     }
+//     else
+//     {
+//         return dispatch_message<Next, End>(
+//             obj, message_id, wparam, lparam,
+//             typename boost::is_same<Next, End>::type());
+//     }
+// }
 
 /**
  * Main message handler.
@@ -132,17 +132,17 @@ inline LRESULT dispatch_message(
  * a matching map entry, the message is delivered to the default message
  * handler.
  */
-template<typename T>
-inline LRESULT dispatch_message(
-    T* obj, UINT message_id, WPARAM wparam, LPARAM lparam)
-{
-    typedef boost::mpl::begin<T::messages::messages>::type Begin;
-    typedef boost::mpl::end<T::messages::messages>::type End;
+// template<typename T>
+// inline LRESULT dispatch_message(
+//     T* obj, UINT message_id, WPARAM wparam, LPARAM lparam)
+// {
+//     typedef boost::mpl::begin<T::messages::messages>::type Begin;
+//     typedef boost::mpl::end<T::messages::messages>::type End;
 
-    return dispatch_message<Begin, End>(
-        obj, message_id, wparam, lparam,
-        typename boost::is_same<Begin, End>::type());
-}
+//     return dispatch_message<Begin, End>(
+//         obj, message_id, wparam, lparam,
+//         typename boost::is_same<Begin, End>::type());
+// }
 
 template<EZEL_MESSAGE_MAP_TEMPLATE>
 class message_map

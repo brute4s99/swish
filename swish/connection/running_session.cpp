@@ -24,6 +24,7 @@
 #include <ssh/session.hpp>
 
 #include <boost/asio/ip/tcp.hpp> // Boost sockets: only used for name resolving
+#include<boost/asio.hpp>
 #include <boost/throw_exception.hpp> // BOOST_THROW_EXCEPTION
 
 #include <cassert>
@@ -39,7 +40,7 @@ using boost::asio::error::host_not_found;
 using boost::asio::io_service;
 using boost::asio::ip::tcp;
 using boost::shared_ptr;
-using boost::system::get_system_category;
+using boost::system::system_category;
 using boost::system::system_error;
 using boost::system::error_code;
 
@@ -99,7 +100,7 @@ ssh::session session_on_socket(tcp::socket& socket, const wstring& host,
                                const string& disconnection_message)
 {
     connect_socket_to_host(socket, host, port, io);
-    return ssh::session(socket.native(), disconnection_message);
+    return ssh::session(socket.native_handle(), disconnection_message);
 }
 }
 
@@ -136,13 +137,13 @@ bool running_session::is_dead()
 {
     fd_set socket_set;
     FD_ZERO(&socket_set);
-    FD_SET(m_socket->native(), &socket_set);
+    FD_SET(m_socket->native_handle(), &socket_set);
     TIMEVAL tv = TIMEVAL();
 
     int rc = ::select(1, &socket_set, NULL, NULL, &tv);
     if (rc < 0)
         BOOST_THROW_EXCEPTION(
-            system_error(::WSAGetLastError(), get_system_category()));
+            system_error(::WSAGetLastError(), system_category()));
     return rc != 0;
 }
 
