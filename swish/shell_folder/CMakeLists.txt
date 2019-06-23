@@ -13,10 +13,32 @@
 # You should have received a copy of the GNU General Public License along with
 # this program.  If not, see <http://www.gnu.org/licenses/>.
 
-set(GENERATED_SOURCES
-  ${CMAKE_CURRENT_BINARY_DIR}/shell_folder.dir/${CMAKE_CFG_INTDIR}/Swish.h
-  ${CMAKE_CURRENT_BINARY_DIR}/shell_folder.dir/${CMAKE_CFG_INTDIR}/Swish_i.c)
-set_source_files_properties(${GENERATED_SOURCES} PROPERTIES GENERATED TRUE)
+#set(GENERATED_SOURCES
+#  ${CMAKE_CURRENT_BINARY_DIR}/shell_folder.dir/${CMAKE_CFG_INTDIR}/Swish.h
+#  ${CMAKE_CURRENT_BINARY_DIR}/shell_folder.dir/${CMAKE_CFG_INTDIR}/Swish_i.c)
+#set_source_files_properties(${GENERATED_SOURCES} PROPERTIES GENERATED TRUE)
+
+SET(_in_FILE ${CMAKE_CURRENT_SOURCE_DIR}/Swish.idl)
+SET(_out_header_name Swish.h)
+SET(_out_header ${CMAKE_CURRENT_BINARY_DIR}/shell_folder.dir/${CMAKE_CFG_INTDIR}/${_out_header_name})
+SET(_out_iid_name Swish_i.c)
+SET(_out_iid ${CMAKE_CURRENT_BINARY_DIR}/shell_folder.dir/${CMAKE_CFG_INTDIR}/${_out_iid_name})
+message("_out_header_name=${_out_header_name}, _out_header=${_out_header}, _out_iid=${_out_iid}")
+ADD_CUSTOM_COMMAND(
+      OUTPUT ${_out_header} ${_out_iid}
+      DEPENDS ${_in_FILE}
+      COMMAND midl /target NT60 /header ${_out_header_name} /iid ${_out_iid_name} ${_in_FILE}
+      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    )
+
+
+SET_SOURCE_FILES_PROPERTIES(
+  ${_out_header}
+  ${_out_iid}
+  PROPERTIES
+  GENERATED TRUE
+)
+
 
 set(SOURCES
   DataObject.h
@@ -48,7 +70,8 @@ set(SOURCES
   data_object/ShellDataObject.cpp
   data_object/StorageMedium.hpp
   Swish.idl
-  ${GENERATED_SOURCES}
+  ${_out_header}
+  ${_out_iid}
   shell_folder.rc)
 
 add_library(shell_folder ${SOURCES})
