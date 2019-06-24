@@ -13,11 +13,6 @@
 # You should have received a copy of the GNU General Public License along with
 # this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#set(GENERATED_SOURCES
-#  ${CMAKE_CURRENT_BINARY_DIR}/shell_folder.dir/${CMAKE_CFG_INTDIR}/Swish.h
-#  ${CMAKE_CURRENT_BINARY_DIR}/shell_folder.dir/${CMAKE_CFG_INTDIR}/Swish_i.c)
-#set_source_files_properties(${GENERATED_SOURCES} PROPERTIES GENERATED TRUE)
-
 SET(_in_FILE ${CMAKE_CURRENT_SOURCE_DIR}/Swish.idl)
 SET(_out_header_name Swish.h)
 SET(_out_header ${CMAKE_CURRENT_BINARY_DIR}/shell_folder.dir/${CMAKE_CFG_INTDIR}/${_out_header_name})
@@ -27,7 +22,7 @@ message("_out_header_name=${_out_header_name}, _out_header=${_out_header}, _out_
 ADD_CUSTOM_COMMAND(
       OUTPUT ${_out_header} ${_out_iid}
       DEPENDS ${_in_FILE}
-      COMMAND midl /target NT60 /header ${_out_header_name} /iid ${_out_iid_name} ${_in_FILE}
+      COMMAND midl /target NT60 /header ${_out_header} /iid ${_out_iid} ${_in_FILE}
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     )
 
@@ -96,8 +91,8 @@ find_package(Boost REQUIRED COMPONENTS date_time system locale filesystem)
 
 target_link_libraries(shell_folder
   PRIVATE
-  host_folder remote_folder frontend nse drop_target urlmon
+  host_folder remote_folder nse drop_target urlmon
   PUBLIC
-  WTL:WTL
+  WTL::WTL
   Washer::washer Comet::comet Boost::boost Boost::date_time Boost::system
   Boost::locale Boost::filesystem)
